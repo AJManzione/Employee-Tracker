@@ -1,9 +1,48 @@
 const inquirer = require('inquirer');
-const mysql2 = require('mysql2');
+const mysql = require('mysql2');
 const consoleTable = require('console.table');
-const { allowedNodeEnvironmentFlags } = require('process');
 
 menuPrompt()
+
+let departments = ['CEO'];
+
+
+function addRole() {
+inquirer.prompt(
+    [
+        {
+            type: 'input',
+            message: 'What is the name of the role?',
+            name: 'role',
+            validate: (value) => { 
+                if(value){return true} 
+                else {return "Please enter a role name"}
+            }
+        },
+        {
+            type: 'input',
+            message: 'What is the salary of the role?',
+            name: 'salary',
+            validate: (value) => { 
+                if(value){return true} 
+                else {return "Please enter a salary"}
+            }
+        },
+        {
+            type: 'list',
+            message: 'Which department does this role belong to?',
+            name: 'whichDepartment',
+            choices: departments
+
+        }
+    ]
+)
+.then(() => {
+        menuPrompt()
+})
+
+}
+
 
 
 
@@ -23,22 +62,30 @@ inquirer.prompt(
             name: 'department',
             validate: (value) => { 
                 if(value){return true} 
-                else {return "Please select a department name"}
+                else {return "Please enter a department name"}
             }
 
         }
     ]
 )
 .then((answer) => {
-    let userAnswer = answer.department;
-
-    if(!userAnswer) {
-        return console.log("You did not provide a department name")
-    } else { 
-        console.log(`added ${userAnswer} to the database`)
-    }
+    departments.push(answer.department)
+    console.log(`added ${userAnswer} to the database`)
+    menuPrompt()
+         
 })
 }
+
+
+
+
+
+
+
+
+
+
+
 
 
 function menuPrompt() {
@@ -60,7 +107,7 @@ inquirer.prompt (
     let userAnswer = answer.welcome;
 
     if(!userAnswer) {
-        return console.log("You did not make a selection");
+        console.log("You did not make a selection");
     } else if (userAnswer == "View All Employees") {
         viewAllEmployees();
     } else if (userAnswer == "Add Employee") {
