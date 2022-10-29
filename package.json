@@ -1,25 +1,20 @@
 {
-  "name": "employee-tracker",
+  "name": "unsolved",
   "version": "1.0.0",
-  "description": "An application built using SQL to track employee's on a team, as well as allows the user to add employees and salary",
+  "description": "",
   "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "start": "node index.js",
+    "test": "jest"
+  },
+  "author": "",
+  "license": "ISC",
   "dependencies": {
     "console.table": "^0.10.0",
     "inquirer": "^8.2.4",
     "mysql2": "^2.3.3"
-  },
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/AJManzione/Employee-Tracker.git"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/AJManzione/Employee-Tracker/issues"
-  },
-  "homepage": "https://github.com/AJManzione/Employee-Tracker#readme"
+  }
 }
