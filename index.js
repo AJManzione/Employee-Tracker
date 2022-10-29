@@ -2,6 +2,10 @@ const inquirer = require('inquirer');
 const cTable = require('console.table');
 const { createPool } = require('mysql2');
 
+// First function called runs the menu prompt
+menuPrompt()
+
+// creates a pool (runs mysql)
 const pool = createPool({
     host: "localhost",
     user: "root",
@@ -9,59 +13,72 @@ const pool = createPool({
     connectionLimit: 30
 })
 
-pool.query(`SELECT * FROM employee_db.department;`, (err, res) => {
-    return console.table(res)
-})
 
-/* menuPrompt()
+/* -------------------------------------------------------------------------- */
+/*                            View All Departments                            */
+/* -------------------------------------------------------------------------- */
+
+function viewAllDepartments() {
+    pool.query(`SELECT * FROM employee_db.department;`, (err, res) => {
+        return console.table(res)
+    })
+}
+
+/* -------------------------------------------------------------------------- */
+/*                               View All Roles                               */
+/* -------------------------------------------------------------------------- */
+
+function viewAllRoles() {
+    pool.query(`SELECT * FROM employee_db.role;`, (err, res) => {
+        return console.table(res)
+    })
+}
 
 let departments = ['CEO'];
 
+/* -------------------------------------------------------------------------- */
+/*                                  Add Role                                  */
+/* -------------------------------------------------------------------------- */
 
 function addRole() {
-inquirer.prompt(
-    [
-        {
-            type: 'input',
-            message: 'What is the name of the role?',
-            name: 'role',
-            validate: (value) => { 
-                if(value){return true} 
-                else {return "Please enter a role name"}
+    inquirer.prompt(
+        [
+            {
+                type: 'input',
+                message: 'What is the name of the role?',
+                name: 'role',
+                validate: (value) => { 
+                    if(value){return true} 
+                    else {return "Please enter a role name"}
+                }
+            },
+            {
+                type: 'input',
+                message: 'What is the salary of the role?',
+                name: 'salary',
+                validate: (value) => { 
+                    if(value){return true} 
+                    else {return "Please enter a salary"}
+                }
+            },
+            {
+                type: 'list',
+                message: 'Which department does this role belong to?',
+                name: 'whichDepartment',
+                choices: departments
+    
             }
-        },
-        {
-            type: 'input',
-            message: 'What is the salary of the role?',
-            name: 'salary',
-            validate: (value) => { 
-                if(value){return true} 
-                else {return "Please enter a salary"}
-            }
-        },
-        {
-            type: 'list',
-            message: 'Which department does this role belong to?',
-            name: 'whichDepartment',
-            choices: departments
+        ]
+    )
+    .then(() => {
+            menuPrompt()
+    })
+    
+    }
 
-        }
-    ]
-)
-.then(() => {
-        menuPrompt()
-})
-
-}
-
-
-
-
-
-
-
-
-
+/* -------------------------------------------------------------------------- */
+/*                               Add Department                               */
+/* -------------------------------------------------------------------------- */
 
 
 function addDepartment() {
@@ -87,17 +104,9 @@ inquirer.prompt(
 })
 }
 
-
-
-
-
-
-
-
-
-
-
-
+/* -------------------------------------------------------------------------- */
+/*                                 Menu Prompt                                */
+/* -------------------------------------------------------------------------- */
 
 function menuPrompt() {
 inquirer.prompt (
@@ -136,4 +145,4 @@ inquirer.prompt (
     }
 
 })
-} */
+}

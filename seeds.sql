@@ -18,7 +18,7 @@ VALUES
     ( 008, "Lawyer", 190000);
 
 
-INSERT INTO employee (id, first_name, last_name)
+INSERT INTO employee (id, first_name, last_name, role_id, manager_id)
 VALUES 
-    ( 001, "Anthony", "Manzione");
+    ( 001, "Anthony", "Manzione", 008, 100);
 
