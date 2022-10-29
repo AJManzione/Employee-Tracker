@@ -5,9 +5,6 @@ VALUES
     ( 003, "Legal"),
     ( 004, "Sales");
 
-SELECT * FROM department;
-
-
 
 INSERT INTO role (id, title, salary)
 VALUES 
@@ -18,15 +15,10 @@ VALUES
     ( 005, "Account Manager", 160000),
     ( 006, "Accountant", 125000),
     ( 007, "Legal Team Lead", 250000),
-    ( 008, "Lawyer", 190000),
-
-
-SELECT * FROM role;
-
+    ( 008, "Lawyer", 190000);
 
 
 INSERT INTO employee (id, first_name, last_name)
 VALUES 
-( 001, "Anthony", "Manzione")
+    ( 001, "Anthony", "Manzione");
 
-SELECT * FROM employee;

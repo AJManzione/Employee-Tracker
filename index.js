@@ -1,8 +1,19 @@
 const inquirer = require('inquirer');
-const mysql = require('mysql2');
-const consoleTable = require('console.table');
+const cTable = require('console.table');
+const { createPool } = require('mysql2');
 
-menuPrompt()
+const pool = createPool({
+    host: "localhost",
+    user: "root",
+    password: "123123321",
+    connectionLimit: 30
+})
+
+pool.query(`SELECT * FROM employee_db.department;`, (err, res) => {
+    return console.table(res)
+})
+
+/* menuPrompt()
 
 let departments = ['CEO'];
 
@@ -125,4 +136,4 @@ inquirer.prompt (
     }
 
 })
-}
+} */
