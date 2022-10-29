@@ -14,7 +14,31 @@ menuPrompt()
 
 
 
+function addDepartment() {
+inquirer.prompt(
+    [
+        {
+            type: 'input',
+            message: 'What is the name of the department?',
+            name: 'department',
+            validate: (value) => { 
+                if(value){return true} 
+                else {return "Please select a department name"}
+            }
 
+        }
+    ]
+)
+.then((answer) => {
+    let userAnswer = answer.department;
+
+    if(!userAnswer) {
+        return console.log("You did not provide a department name")
+    } else { 
+        console.log(`added ${userAnswer} to the database`)
+    }
+})
+}
 
 
 function menuPrompt() {
@@ -32,12 +56,11 @@ inquirer.prompt (
         }
     ]
 )
-
 .then ((answer) => {
     let userAnswer = answer.welcome;
 
     if(!userAnswer) {
-        return "You did not make a selection";
+        return console.log("You did not make a selection");
     } else if (userAnswer == "View All Employees") {
         viewAllEmployees();
     } else if (userAnswer == "Add Employee") {
