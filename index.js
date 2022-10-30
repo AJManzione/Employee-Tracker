@@ -92,8 +92,7 @@ function viewAllDepartments() {
 function viewAllRoles() {
     pool.query(`SELECT * FROM employee_db.role;`, (err, res) => {
         console.table(res)
-    })
-    setTimeout(menuPrompt, 500);
+    }); setTimeout(menuPrompt, 500);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -199,10 +198,9 @@ inquirer
     let newSalary = answer.salary;
 
     pool.promise().query(`INSERT INTO employee_db.role (id, title, salary) VALUES (000, "${newRole}", "${newSalary}")`) 
-    .then( ([rows, fields]) => {
+    .then( () => {
         console.log(`Added ${newRole} to the database`)
-    }) 
-    setTimeout(menuPrompt, 500);
+    }); setTimeout(menuPrompt, 500);
 
 })
 }
@@ -229,11 +227,10 @@ inquirer
     ]
 )
 .then((answer) => {
-    let newDepartment = answer.department
-    pool.execute (`INSERT INTO employee_db.department (id, name) VALUES (000, "${newDepartment}")`); 
-    console.log(`added ${newDepartment} to the database`)
-    pool.end
-    menuPrompt()
+    let newDepartment = answer.department;
+
+    pool.promise().query(`INSERT INTO employee_db.department (id, title) VALUES (000, "${newDepartment}")`) 
+    .then(console.log(`Added ${newDepartment} to the database`)); setTimeout(menuPrompt, 500);
 }) 
 }
 
