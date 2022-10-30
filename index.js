@@ -3,7 +3,7 @@ const cTable = require('console.table');
 const { createPool } = require('mysql2');
 
 // First function called runs the menu prompt
-/* menuPrompt()  */
+menuPrompt() 
 
 // creates a pool (runs mysql)
 const pool = createPool({
@@ -41,35 +41,14 @@ function viewAllRoles() {
 /* -------------------------------------------------------------------------- */
 
 
-
-pool.execute(`SELECT * FROM employee_db.role`, (err, res) => {
-
-    const roles = res.map(
-        function({ title }) {
-            console.log(title);
-        }
-    )
-
-    /*  example
-
-       employeeRoles.push(res)
-    console.log(employeeRoles);
-
-     [
-        { id: 1, title: 'Sales Lead', salary: '100000' },
-        { id: 2, title: 'Salesperson', salary: '80000' },
-        { id: 3, title: 'Lead Engineer', salary: '150000' },
-        { id: 4, title: 'Software Engineer', salary: '120000' },
-        { id: 5, title: 'Account Manager', salary: '160000' },
-        { id: 6, title: 'Accountant', salary: '125000' },
-        { id: 7, title: 'Legal Team Lead', salary: '250000' },
-        { id: 8, title: 'Lawyer', salary: '190000' }
-      ]
-    ] */
-    
-}) 
+employeeRoles = []
 
 function addEmployee() {
+    
+    pool.execute(`SELECT * FROM employee_db.role`, (err, res) => {
+        res.map(function({ title }) {employeeRoles.push(title)}); 
+    })
+
 inquirer.prompt(
     [
         {
@@ -105,6 +84,9 @@ inquirer.prompt(
         }
     ]
 )
+.then((answer) => {
+ 
+})
 
 }
 
