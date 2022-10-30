@@ -35,7 +35,6 @@ function viewAllRoles() {
     })
 }
 
-
 /* -------------------------------------------------------------------------- */
 /*                                Add Employee                                */
 /* -------------------------------------------------------------------------- */
@@ -49,7 +48,8 @@ function addEmployee() {
         res.map(function({ title }) {employeeRoles.push(title)}); 
     })
 
-inquirer.prompt(
+inquirer
+.prompt(
     [
         {
             type: 'input',
@@ -90,69 +90,53 @@ inquirer.prompt(
 
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-let departments = [];
-
 /* -------------------------------------------------------------------------- */
 /*                                  Add Role                                  */
 /* -------------------------------------------------------------------------- */
 
+let departments = [];
+
 function addRole() {
-    inquirer.prompt(
-        [
-            {
-                type: 'input',
-                message: 'What is the name of the role?',
-                name: 'role',
-                validate: (value) => { 
-                    if(value){return true} 
-                    else {return "Please enter a role name"}
-                }
-            },
-            {
-                type: 'input',
-                message: 'What is the salary of the role?',
-                name: 'salary',
-                validate: (value) => { 
-                    if(value){return true} 
-                    else {return "Please enter a salary"}
-                }
-            },
-            {
-                type: 'list',
-                message: 'Which department does this role belong to?',
-                name: 'whichDepartment',
-                choices: departments
-    
-            }
-        ]
-    )
-    .then(() => {
-            menuPrompt()
+
+    pool.execute(`SELECT * FROM employee_db.department`, (err, res) => {
+        res.map(function({ name }) {departments.push(name)}); 
     })
+
+inquirer
+.prompt(
+    [
+        {
+            type: 'input',
+            message: 'What is the name of the role?',
+            name: 'role',
+            validate: (value) => { 
+                if(value){return true} 
+                else {return "Please enter a role name"}
+            }
+        },
+        {
+            type: 'input',
+            message: 'What is the salary of the role?',
+            name: 'salary',
+            validate: (value) => { 
+                if(value){return true} 
+                else {return "Please enter a salary"}
+            }
+        },
+        {
+            type: 'list',
+            message: 'Which department does this role belong to?',
+            name: 'whichDepartment',
+            choices: departments
     
-    }
+        }
+    ]
+)
+.then(() => {
+        menuPrompt()
+})
+    
+}
 
 /* -------------------------------------------------------------------------- */
 /*                               Add Department                               */
@@ -160,7 +144,8 @@ function addRole() {
 
 
 function addDepartment() {
-inquirer.prompt(
+inquirer
+.prompt(
     [
         {
             type: 'input',
@@ -187,7 +172,8 @@ inquirer.prompt(
 /* -------------------------------------------------------------------------- */
 
 function menuPrompt() {
-inquirer.prompt (
+inquirer
+.prompt (
     [
         {
             type: 'list',
