@@ -97,13 +97,15 @@ inquirer.prompt(
     ]
 )
 .then((answer) => {
-    departments.push(answer.department)
-    console.log(`added ${userAnswer} to the database`)
+    let newDepartment = answer.department
+    pool.execute (
+        `INSERT INTO employee_db.department (id, name) VALUES (000, "${newDepartment}")`
+    ); 
+    console.log(`added ${newDepartment} to the database`)
+    pool.end
     menuPrompt()
-         
-})
+}) 
 }
-
 /* -------------------------------------------------------------------------- */
 /*                                 Menu Prompt                                */
 /* -------------------------------------------------------------------------- */
