@@ -89,6 +89,7 @@ function viewAllDepartments() {
 /*                               View All Roles                               */
 /* -------------------------------------------------------------------------- */
 
+
 function viewAllRoles() {
     pool.query(`SELECT role.id, title, department, salary FROM employee_db.role INNER JOIN employee_db.department ON department_id = department.id;`, (err, res) => {
         console.table(res)
@@ -106,10 +107,15 @@ function updateEmployeeRole() {
     let firstNames = [];
     let lastNames = [];
     let employeeNames = [];
+    let allRoles = [];
 
     pool.execute(`SELECT first_name FROM employee_db.employee;`, (err, res) => {
         res.map(function({ first_name }) {firstNames.push(first_name)}); 
     })
+
+    pool.query(`SELECT role.title FROM employee_db.role;`, (err, res) => {
+        res.map(function({ title }) {allRoles.push(title)});
+    });
 
     setTimeout(getLastNames, 100);
     function getLastNames() {
@@ -127,6 +133,7 @@ function updateEmployeeRole() {
 
 setTimeout(inquireUpdateER, 120);
 
+let selectedEmployee = [];
 
 function inquireUpdateER() {
 inquirer
@@ -139,12 +146,29 @@ inquirer
         if(value){return true} 
         else {return "Please make a selection"}
     }
+},
+])
+.then((answer) => {
+    update = answer.updateEmployee;
+    selectedEmployee.push(update);
+    setTimeout(updateSelectedRole, 100);
+})}
 
+
+
+function updateSelectedRole() {
+inquirer
+.prompt([{
+    type: 'list',
+    message: `Which role do you want to assign to ${selectedEmployee}?`,
+    name: 'newRole',
+    choices: allRoles,
+    validate: (value) => { 
+        if(value){return true} 
+        else {return "Please make a selection"}
+    }
 
 }])
-.then((answer) => {
-    update = answer.updateEmployee
-})
 }
 
 }
