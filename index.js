@@ -105,7 +105,7 @@ employees = [];
 
 function updateEmployeeRole() {
 
-    pool.query(`SELECT * FROM employee_db.employee;`, (err, res) => {
+    pool.execute(`SELECT * FROM employee_db.employee;`, (err, res) => {
         res.map(function({ first_name }) {employees.push(first_name)}); 
     })
 
@@ -185,7 +185,7 @@ inquirer
     let lastName = answer.lastName;
     let employeeRole = answer.employeeRole;
 
-    pool.promise().query(`INSERT INTO employee_db.employee (id, first_name, last_name, role_id, manager_id;) VALUES (000, "${firstName}", "${lastName}", 008, 100)`) 
+    pool.promise().query(`INSERT INTO employee_db.employee (first_name, last_name) VALUES ("${firstName}", "${lastName}")`) 
     .then( () => {
         console.log(`Added ${firstName} ${lastName} to the database`)
     }); setTimeout(menuPrompt, 100);
@@ -202,7 +202,7 @@ let departments = [];
 function addRole() {
 
     pool.execute(`SELECT * FROM employee_db.department;`, (err, res) => {
-        res.map(function({ department }) {departments.push(department)}); 
+        res.map(function({ department }) {departments.push(department)});  
     })
 
 inquirer
@@ -228,18 +228,33 @@ inquirer
     type: 'list',
     message: 'Which department does this role belong to?',
     name: 'whichDepartment',
-    choices: departments
+    choices: departments,
+    validate: (value) => { 
+        if(value){return true} 
+        else {return "Please select a department"}
+    }
     
 }])
 .then((answer) => {
     let newRole = answer.role;
     let newSalary = answer.salary;
+    let departmentChoice = answer.whichDepartment;
+    let departmentId = [];
+    let id;
 
-    pool.promise().query(`INSERT INTO employee_db.role (id, title, salary) VALUES (000, "${newRole}", "${newSalary}")`) 
+    pool.query(`SELECT id FROM employee_db.department WHERE department = '${departmentChoice}';`, (err, res) => {
+        res.map(function({ id }) {departmentId.push(id)});
+        id = departmentId.toString()
+    })
+    
+    setTimeout(getRole, 100);
+
+    function getRole() {
+    pool.promise().query(`INSERT INTO employee_db.role (title, salary, department_id) VALUES ("${newRole}", "${newSalary}", 00${id})`) 
     .then( () => {
         console.log(`Added ${newRole} to the database`)
     }); setTimeout(menuPrompt, 100);
-
+    }
 })
 }
 
