@@ -101,21 +101,40 @@ function viewAllRoles() {
 /*                            Update Employee Role                            */
 /* -------------------------------------------------------------------------- */
 
-employees = [];
 
 function updateEmployeeRole() {
+    let firstNames = [];
+    let lastNames = [];
+    let employeeNames = [];
 
-    pool.execute(`SELECT * FROM employee_db.employee;`, (err, res) => {
-        res.map(function({ first_name }) {employees.push(first_name)}); 
+    pool.execute(`SELECT first_name FROM employee_db.employee;`, (err, res) => {
+        res.map(function({ first_name }) {firstNames.push(first_name)}); 
     })
 
+    setTimeout(getLastNames, 100);
+    function getLastNames() {
+    pool.execute(`SELECT last_name FROM employee_db.employee;`, (err, res) => {
+        res.map(function({ last_name }) {lastNames.push(last_name)}); 
+        for(i = 0; i < firstNames.length; i++) {
+            let first = firstNames[i].toString();
+            let last = lastNames[i].toString();
+            names = first + " " + last;
+            employeeNames.push(names);
+        }
+    })
+    }
 
+
+setTimeout(inquireUpdateER, 120);
+
+
+function inquireUpdateER() {
 inquirer
 .prompt([{
     type: 'list',
     message: "Which employee role do you want to update?",
     name: 'updateEmployee',
-    choices: employees,
+    choices: employeeNames,
     validate: (value) => { 
         if(value){return true} 
         else {return "Please make a selection"}
@@ -124,11 +143,11 @@ inquirer
 
 }])
 .then((answer) => {
-    update = answer.updateEmployeeRole
+    update = answer.updateEmployee
 })
 }
 
-
+}
 
 
 
@@ -184,7 +203,7 @@ inquirer
     let firstName = answer.firstName;
     let lastName = answer.lastName;
     let employeeRole = answer.employeeRole;
-    roleId = []
+    let roleId = []
     let id;
 
 
