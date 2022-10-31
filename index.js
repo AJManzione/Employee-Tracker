@@ -63,10 +63,10 @@ function menuPrompt() {
 /* -------------------------------------------------------------------------- */
 
 async function viewAllEmployees() {
-    pool.promise().query(`SELECT employee.id, first_name, last_name, title, department, salary FROM employee_db.employee INNER JOIN employee_db.department ON employee.id = department.id INNER JOIN employee_db.role ON employee.id = role.id`) 
+    pool.promise().query(`SELECT employee.id, first_name, last_name, title, department, salary, manager FROM employee_db.employee INNER JOIN employee_db.department ON employee.id = department.id INNER JOIN employee_db.role ON employee.id = role.id;`) 
     .then( ([rows, fields]) => {
         console.table(rows)
-    }) 
+    }); setTimeout(menuPrompt, 100);
     
     
 }
@@ -90,10 +90,50 @@ function viewAllDepartments() {
 /* -------------------------------------------------------------------------- */
 
 function viewAllRoles() {
-    pool.query(`SELECT role.id, title, department, salary FROM employee_db.role INNER JOIN employee_db.department ON department_id = department.id`, (err, res) => {
+    pool.query(`SELECT role.id, title, department, salary FROM employee_db.role INNER JOIN employee_db.department ON department_id = department.id;`, (err, res) => {
         console.table(res)
     }); setTimeout(menuPrompt, 100);
 }
+
+
+
+/* -------------------------------------------------------------------------- */
+/*                            Update Employee Role                            */
+/* -------------------------------------------------------------------------- */
+
+employees = [];
+
+function updateEmployeeRole() {
+
+    pool.query(`SELECT * FROM employee_db.employee;`, (err, res) => {
+        res.map(function({ first_name }) {employees.push(first_name)}); 
+    })
+
+
+inquirer
+.prompt([{
+    type: 'list',
+    message: "Which employee role do you want to update?",
+    name: 'updateEmployee',
+    choices: employees,
+    validate: (value) => { 
+        if(value){return true} 
+        else {return "Please make a selection"}
+    }
+
+
+}])
+.then((answer) => {
+    update = answer.updateEmployeeRole
+})
+}
+
+
+
+
+
+
+
 
 /* -------------------------------------------------------------------------- */
 /*                                Add Employee                                */
@@ -104,7 +144,7 @@ employeeRoles = []
 
 function addEmployee() {
     
-    pool.execute(`SELECT * FROM employee_db.role`, (err, res) => {
+    pool.execute(`SELECT * FROM employee_db.role;`, (err, res) => {
         res.map(function({ title }) {employeeRoles.push(title)}); 
     })
 
@@ -145,7 +185,7 @@ inquirer
     let lastName = answer.lastName;
     let employeeRole = answer.employeeRole;
 
-    pool.promise().query(`INSERT INTO employee_db.employee (id, first_name, last_name, role_id, manager_id) VALUES (000, "${firstName}", "${lastName}", 008, 100)`) 
+    pool.promise().query(`INSERT INTO employee_db.employee (id, first_name, last_name, role_id, manager_id;) VALUES (000, "${firstName}", "${lastName}", 008, 100)`) 
     .then( () => {
         console.log(`Added ${firstName} ${lastName} to the database`)
     }); setTimeout(menuPrompt, 100);
@@ -161,8 +201,8 @@ let departments = [];
 
 function addRole() {
 
-    pool.execute(`SELECT * FROM employee_db.department`, (err, res) => {
-        res.map(function({ title }) {departments.push(title)}); 
+    pool.execute(`SELECT * FROM employee_db.department;`, (err, res) => {
+        res.map(function({ department }) {departments.push(department)}); 
     })
 
 inquirer
@@ -221,8 +261,8 @@ inquirer
 .then((answer) => {
     let newDepartment = answer.department;
 
-    pool.promise().query(`INSERT INTO employee_db.department (id, title) VALUES (000, "${newDepartment}")`) 
-    .then(console.log(`Added ${newDepartment} to the database`)); setTimeout(menuPrompt, 500);
+    pool.promise().query(`INSERT INTO employee_db.department (id, department) VALUES (000, "${newDepartment}")`) 
+    .then(console.log(`Added ${newDepartment} to the database`)); setTimeout(menuPrompt, 100);
 }) 
 }
 
