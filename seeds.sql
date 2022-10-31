@@ -18,5 +18,6 @@ INSERT INTO employee (first_name, last_name, role_id)
 VALUES 
     ("Anthony", "Manzione", 001),
     ("Rick", "Sanchez", 002),
-    ("Morty", "Smith", 003);
+    ("Morty", "Smith", 003),
+    ("Jerry", "Smith", 004);
 

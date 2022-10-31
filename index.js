@@ -184,11 +184,23 @@ inquirer
     let firstName = answer.firstName;
     let lastName = answer.lastName;
     let employeeRole = answer.employeeRole;
+    roleId = []
+    let id;
 
-    pool.promise().query(`INSERT INTO employee_db.employee (first_name, last_name) VALUES ("${firstName}", "${lastName}")`) 
+
+    pool.query(`SELECT id FROM employee_db.role WHERE title = '${employeeRole}';`, (err, res) => {
+        res.map(function({ id }) {roleId.push(id)});
+        id = roleId.toString()
+    })
+
+    setTimeout(getEmployee, 100);
+
+    function getEmployee() {
+    pool.promise().query(`INSERT INTO employee_db.employee (first_name, last_name, role_id) VALUES ("${firstName}", "${lastName}", 00${id})`) 
     .then( () => {
         console.log(`Added ${firstName} ${lastName} to the database`)
     }); setTimeout(menuPrompt, 100);
+    }
 })
 
 }
