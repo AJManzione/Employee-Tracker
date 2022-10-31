@@ -63,7 +63,7 @@ function menuPrompt() {
 /* -------------------------------------------------------------------------- */
 
 async function viewAllEmployees() {
-    pool.promise().query('SELECT * FROM employee_db.employee JOIN employee_db.department;') 
+    pool.promise().query(`SELECT employee.id, first_name, last_name, title, department, salary FROM employee_db.employee INNER JOIN employee_db.department ON employee.id = department.id INNER JOIN employee_db.role ON employee.id = role.id`) 
     .then( ([rows, fields]) => {
         console.table(rows)
     }) 
@@ -81,7 +81,7 @@ function viewAllDepartments() {
     pool.promise().query(`SELECT * FROM employee_db.department;`) 
     .then( ([rows, fields]) => {
         console.table(rows)
-    })
+    }); setTimeout(menuPrompt, 100);
     
 
 }
@@ -90,9 +90,9 @@ function viewAllDepartments() {
 /* -------------------------------------------------------------------------- */
 
 function viewAllRoles() {
-    pool.query(`SELECT * FROM employee_db.role;`, (err, res) => {
+    pool.query(`SELECT role.id, title, department, salary FROM employee_db.role INNER JOIN employee_db.department ON department_id = department.id`, (err, res) => {
         console.table(res)
-    }); setTimeout(menuPrompt, 500);
+    }); setTimeout(menuPrompt, 100);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -109,43 +109,46 @@ function addEmployee() {
     })
 
 inquirer
-.prompt(
-    [
-        {
-            type: 'input',
-            message: "What is the employee's first name?",
-            name: 'firstName',
-            validate: (value) => { 
-                if(value){return true} 
-                else {return "Please make a selection"}
-            }
+.prompt([{
+    type: 'input',
+    message: "What is the employee's first name?",
+    name: 'firstName',
+    validate: (value) => { 
+        if(value){return true} 
+        else {return "Please make a selection"}
+    }
 
-        },
-        {
-            type: 'input',
-            message: "What is the employee's last name?",
-            name: 'lastName',
-            validate: (value) => { 
-                if(value){return true} 
-                else {return "Please make a selection"}
-            }
+},
+{
+    type: 'input',
+    message: "What is the employee's last name?",
+    name: 'lastName',
+    validate: (value) => { 
+        if(value){return true} 
+        else {return "Please make a selection"}
+    }
 
-        },
-        {
-            type: 'list',
-            message: "What is the employee's role",
-            name: 'employeeRole',
-            choices: employeeRoles,
-            validate: (value) => { 
-                if(value){return true} 
-                else {return "Please make a selection"}
-            }
+},
+{
+    type: 'list',
+    message: "What is the employee's role",
+    name: 'employeeRole',
+    choices: employeeRoles,
+    validate: (value) => { 
+        if(value){return true} 
+        else {return "Please make a selection"}
+    }
 
-        }
-    ]
-)
+}])
 .then((answer) => {
-    menuPrompt()
+    let firstName = answer.firstName;
+    let lastName = answer.lastName;
+    let employeeRole = answer.employeeRole;
+
+    pool.promise().query(`INSERT INTO employee_db.employee (id, first_name, last_name, role_id, manager_id) VALUES (000, "${firstName}", "${lastName}", 008, 100)`) 
+    .then( () => {
+        console.log(`Added ${firstName} ${lastName} to the database`)
+    }); setTimeout(menuPrompt, 100);
 })
 
 }
@@ -162,37 +165,32 @@ function addRole() {
         res.map(function({ title }) {departments.push(title)}); 
     })
 
-
 inquirer
-.prompt(
-    [
-        {
-            type: 'input',
-            message: 'What is the name of the role?',
-            name: 'role',
-            validate: (value) => { 
-                if(value){return true} 
-                else {return "Please enter a role name"}
-            }
-        },
-        {
-            type: 'input',
-            message: 'What is the salary of the role?',
-            name: 'salary',
-            validate: (value) => { 
-                if(value){return true} 
-                else {return "Please enter a salary"}
-            }
-        },
-        {
-            type: 'list',
-            message: 'Which department does this role belong to?',
-            name: 'whichDepartment',
-            choices: departments
+.prompt([{
+    type: 'input',
+    message: 'What is the name of the role?',
+    name: 'role',
+    validate: (value) => { 
+        if(value){return true} 
+        else {return "Please enter a role name"}
+    }
+},
+{
+    type: 'input',
+    message: 'What is the salary of the role?',
+    name: 'salary',
+    validate: (value) => { 
+        if(value){return true} 
+        else {return "Please enter a salary"}
+    }
+},
+{
+    type: 'list',
+    message: 'Which department does this role belong to?',
+    name: 'whichDepartment',
+    choices: departments
     
-        }
-    ]
-)
+}])
 .then((answer) => {
     let newRole = answer.role;
     let newSalary = answer.salary;
@@ -200,7 +198,7 @@ inquirer
     pool.promise().query(`INSERT INTO employee_db.role (id, title, salary) VALUES (000, "${newRole}", "${newSalary}")`) 
     .then( () => {
         console.log(`Added ${newRole} to the database`)
-    }); setTimeout(menuPrompt, 500);
+    }); setTimeout(menuPrompt, 100);
 
 })
 }
@@ -212,20 +210,14 @@ inquirer
 
 function addDepartment() {
 inquirer
-.prompt(
-    [
-        {
-            type: 'input',
-            message: 'What is the name of the department?',
-            name: 'department',
-            validate: (value) => { 
-                if(value){return true} 
-                else {return "Please enter a department name"}
-            }
-
-        }
-    ]
-)
+.prompt([{
+    type: 'input',
+    message: 'What is the name of the department?',
+    name: 'department',
+    validate: (value) => { 
+        if(value){return true} 
+        else {return "Please enter a department name"}
+}}])
 .then((answer) => {
     let newDepartment = answer.department;
 
