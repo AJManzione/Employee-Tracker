@@ -9,9 +9,8 @@ menuPrompt()
 const pool = createPool({
     host: "localhost",
     user: "root",
-    waitForConnections: true,
     password: "123123321",
-    connectionLimit: 30
+    database: "employee_db"
 })
 
 /* -------------------------------------------------------------------------- */
@@ -62,11 +61,11 @@ function menuPrompt() {
 /*                             View All Employees                             */
 /* -------------------------------------------------------------------------- */
 
-async function viewAllEmployees() {
-    pool.promise().query(`SELECT employee.id, first_name, last_name, title, department, salary, manager FROM employee_db.employee INNER JOIN employee_db.department ON employee.id = department.id INNER JOIN employee_db.role ON employee.id = role.id;`) 
-    .then( ([rows, fields]) => {
-        console.table(rows);
-        pool.end;
+function viewAllEmployees() {
+    pool.query("SELECT employee.first_name, employee.last_name, role.title, role.salary, department.name, CONCAT(e.first_name, ' ' ,e.last_name) AS Manager FROM employee INNER JOIN role on role.id = employee.role_id INNER JOIN department on department.id = role.department_id left join employee e on employee.manager_id = e.id;", 
+    function(err, res) {
+      if (err) throw err
+      console.table(res)
     }); setTimeout(menuPrompt, 100);
     
     
@@ -79,12 +78,11 @@ async function viewAllEmployees() {
 
 function viewAllDepartments() {
 
-    pool.promise().query(`SELECT * FROM employee_db.department;`) 
-    .then( ([rows, fields]) => {
-        console.table(rows);
+    pool.query(`SELECT * FROM employee_db.department;`, (err, res) => {
+        console.table(res);
         pool.end;
     }); setTimeout(menuPrompt, 100);
-    
+
 
 }
 /* -------------------------------------------------------------------------- */
@@ -184,14 +182,23 @@ inquirer
     let newName = update.split(" ")
     selectedFirstName = newName[0];
 
+
     pool.execute(`SELECT role.id FROM employee_db.role WHERE title = "${selectedRole}";`, (err, res) => {
         res.map(function({ id }) {newRoleID.push(id)});
         id = newRoleID.toString()
         pool.end;
+        setTimeout(changeRole, 100);
         
-    setTimeout(updateRole, 100)
+ 
+    function changeRole() {   
+        pool.execute(`UPDATE employee_db.employee SET role_id = ${id} WHERE first_name = "${selectedFirstName}";`);
+        console.log(`Successfully changed ${update} to ${selectedRole}`);
+        pool.end;
+        setTimeout(menuPrompt, 1000);
 
-    function updateRole() {
+    }
+
+    /* function updateRole() {
 
         let firstName = [];
         let lastName = [];
@@ -204,44 +211,17 @@ inquirer
                 res.map(function({ role_id }) { roleId.push(role_id)})
 
                 for(i = 0; i < firstName.length; i++) {
-                    let seed = ` ("${firstName[i]}", "${lastName[i]}", ${roleId[i]})`
+              quit      let seed = ` ("${firstName[i]}", "${lastName[i]}", ${roleId[i]})`
                     employeeSeed.push(seed);
                 } 
                 newSeed = employeeSeed.toString() + ";";
+                
             
         })
-
  
- /*        pool.execute(`UPDATE employee_db.employee SET role_id = ${id} WHERE first_name = "${selectedFirstName}";`);
-        console.log(`Successfully changed ${update} to ${selectedRole}`);
-        pool.end;
-        setTimeout(menuPrompt, 100);  */
 
 
-        let newTable = `
-            DROP TABLE employee FROM employee_db
-
-            CREATE TABLE employee (
-            id INT AUTO_INCREMENT PRIMARY KEY,
-            first_name VARCHAR(30),
-            last_name VARCHAR(30),
-            role_id INT,
-            FOREIGN KEY (role_id)
-            REFERENCES role(id),
-            manager TEXT,
-            manager_id INT,
-            FOREIGN KEY (manager_id)
-            REFERENCES employee(id)
-
-            INSERT INTO employee (first_name, last_name, role_id)
-            VALUES 
-            ("Anthony", "Manzione", 001),
-            ("Rick", "Sanchez", 002),
-            ("Morty", "Smith", 003),
-            ("Jerry", "Smith", 004);
-
-        );`
-    }
+    } */
     })
 })
 }
