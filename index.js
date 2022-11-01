@@ -62,8 +62,7 @@ function menuPrompt() {
 /* -------------------------------------------------------------------------- */
 
 function viewAllEmployees() {
-    pool.query("SELECT employee.first_name, employee.last_name, role.title, role.salary, department.name, CONCAT(e.first_name, ' ' ,e.last_name) AS Manager FROM employee INNER JOIN role on role.id = employee.role_id INNER JOIN department on department.id = role.department_id left join employee e on employee.manager_id = e.id;", 
-    function(err, res) {
+    pool.query("SELECT employee.first_name, employee.last_name, role.title, role.salary, department.name, CONCAT(e.first_name, ' ' ,e.last_name) AS Manager FROM employee INNER JOIN role on role.id = employee.role_id INNER JOIN department on department.id = role.department_id left join employee e on employee.manager_id = e.id;",(err, res) => {
       if (err) throw err
       console.table(res)
     }); setTimeout(menuPrompt, 100);
@@ -78,9 +77,9 @@ function viewAllEmployees() {
 
 function viewAllDepartments() {
 
-    pool.query(`SELECT * FROM employee_db.department;`, (err, res) => {
+    pool.query(`SELECT * FROM department;`, (err, res) => {
+        if (err) throw err
         console.table(res);
-        pool.end;
     }); setTimeout(menuPrompt, 100);
 
 
@@ -91,7 +90,7 @@ function viewAllDepartments() {
 
 
 function viewAllRoles() {
-    pool.query(`SELECT role.id, title, department, salary FROM employee_db.role INNER JOIN employee_db.department ON department_id = department.id;`, (err, res) => {
+    pool.query(`SELECT role.id, role.title, department.name, role.salary FROM employee_db.role INNER JOIN department ON department_id = department.id;`, (err, res) => {
         console.table(res);
         pool.end;
     }); setTimeout(menuPrompt, 100);
