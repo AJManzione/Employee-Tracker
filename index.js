@@ -65,7 +65,8 @@ function menuPrompt() {
 async function viewAllEmployees() {
     pool.promise().query(`SELECT employee.id, first_name, last_name, title, department, salary, manager FROM employee_db.employee INNER JOIN employee_db.department ON employee.id = department.id INNER JOIN employee_db.role ON employee.id = role.id;`) 
     .then( ([rows, fields]) => {
-        console.table(rows)
+        console.table(rows);
+        pool.end;
     }); setTimeout(menuPrompt, 100);
     
     
@@ -80,7 +81,8 @@ function viewAllDepartments() {
 
     pool.promise().query(`SELECT * FROM employee_db.department;`) 
     .then( ([rows, fields]) => {
-        console.table(rows)
+        console.table(rows);
+        pool.end;
     }); setTimeout(menuPrompt, 100);
     
 
@@ -92,7 +94,8 @@ function viewAllDepartments() {
 
 function viewAllRoles() {
     pool.query(`SELECT role.id, title, department, salary FROM employee_db.role INNER JOIN employee_db.department ON department_id = department.id;`, (err, res) => {
-        console.table(res)
+        console.table(res);
+        pool.end;
     }); setTimeout(menuPrompt, 100);
 }
 
@@ -111,10 +114,12 @@ function updateEmployeeRole() {
 
     pool.execute(`SELECT first_name FROM employee_db.employee;`, (err, res) => {
         res.map(function({ first_name }) {firstNames.push(first_name)}); 
+        pool.end;
     })
 
     pool.query(`SELECT role.title FROM employee_db.role;`, (err, res) => {
         res.map(function({ title }) {allRoles.push(title)});
+        pool.end;
     });
 
     setTimeout(getLastNames, 100);
@@ -126,6 +131,7 @@ function updateEmployeeRole() {
             let last = lastNames[i].toString();
             names = first + " " + last;
             employeeNames.push(names);
+            pool.end;
         }
     })
     }
@@ -169,6 +175,75 @@ inquirer
     }
 
 }])
+.then((answer) => {
+    let selectedRole = answer.newRole;
+    let newRoleID = [];
+    let id;
+    let selectedFirstName;
+
+    let newName = update.split(" ")
+    selectedFirstName = newName[0];
+
+    pool.execute(`SELECT role.id FROM employee_db.role WHERE title = "${selectedRole}";`, (err, res) => {
+        res.map(function({ id }) {newRoleID.push(id)});
+        id = newRoleID.toString()
+        pool.end;
+        
+    setTimeout(updateRole, 100)
+
+    function updateRole() {
+
+        let firstName = [];
+        let lastName = [];
+        let roleId = [];
+        let employeeSeed = [];
+        let newSeed;
+        pool.execute('SELECT * FROM employee_db.employee;', (err, res) => {
+                res.map(function({ first_name }) { firstName.push(first_name)})
+                res.map(function({ last_name }) { lastName.push(last_name)})
+                res.map(function({ role_id }) { roleId.push(role_id)})
+
+                for(i = 0; i < firstName.length; i++) {
+                    let seed = ` ("${firstName[i]}", "${lastName[i]}", ${roleId[i]})`
+                    employeeSeed.push(seed);
+                } 
+                newSeed = employeeSeed.toString() + ";";
+            
+        })
+
+ 
+ /*        pool.execute(`UPDATE employee_db.employee SET role_id = ${id} WHERE first_name = "${selectedFirstName}";`);
+        console.log(`Successfully changed ${update} to ${selectedRole}`);
+        pool.end;
+        setTimeout(menuPrompt, 100);  */
+
+
+        let newTable = `
+            DROP TABLE employee FROM employee_db
+
+            CREATE TABLE employee (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            first_name VARCHAR(30),
+            last_name VARCHAR(30),
+            role_id INT,
+            FOREIGN KEY (role_id)
+            REFERENCES role(id),
+            manager TEXT,
+            manager_id INT,
+            FOREIGN KEY (manager_id)
+            REFERENCES employee(id)
+
+            INSERT INTO employee (first_name, last_name, role_id)
+            VALUES 
+            ("Anthony", "Manzione", 001),
+            ("Rick", "Sanchez", 002),
+            ("Morty", "Smith", 003),
+            ("Jerry", "Smith", 004);
+
+        );`
+    }
+    })
+})
 }
 
 }
@@ -189,6 +264,7 @@ function addEmployee() {
     
     pool.execute(`SELECT * FROM employee_db.role;`, (err, res) => {
         res.map(function({ title }) {employeeRoles.push(title)}); 
+        pool.end;
     })
 
 inquirer
@@ -234,6 +310,7 @@ inquirer
     pool.query(`SELECT id FROM employee_db.role WHERE title = '${employeeRole}';`, (err, res) => {
         res.map(function({ id }) {roleId.push(id)});
         id = roleId.toString()
+        pool.end;
     })
 
     setTimeout(getEmployee, 100);
@@ -242,6 +319,7 @@ inquirer
     pool.promise().query(`INSERT INTO employee_db.employee (first_name, last_name, role_id) VALUES ("${firstName}", "${lastName}", 00${id})`) 
     .then( () => {
         console.log(`Added ${firstName} ${lastName} to the database`)
+        pool.end;
     }); setTimeout(menuPrompt, 100);
     }
 })
@@ -258,6 +336,7 @@ function addRole() {
 
     pool.execute(`SELECT * FROM employee_db.department;`, (err, res) => {
         res.map(function({ department }) {departments.push(department)});  
+        pool.end;
     })
 
 inquirer
@@ -300,6 +379,7 @@ inquirer
     pool.query(`SELECT id FROM employee_db.department WHERE department = '${departmentChoice}';`, (err, res) => {
         res.map(function({ id }) {departmentId.push(id)});
         id = departmentId.toString()
+        pool.end;
     })
     
     setTimeout(getRole, 100);
@@ -308,6 +388,7 @@ inquirer
     pool.promise().query(`INSERT INTO employee_db.role (title, salary, department_id) VALUES ("${newRole}", "${newSalary}", 00${id})`) 
     .then( () => {
         console.log(`Added ${newRole} to the database`)
+        pool.end;
     }); setTimeout(menuPrompt, 100);
     }
 })
@@ -332,7 +413,9 @@ inquirer
     let newDepartment = answer.department;
 
     pool.promise().query(`INSERT INTO employee_db.department (id, department) VALUES (000, "${newDepartment}")`) 
-    .then(console.log(`Added ${newDepartment} to the database`)); setTimeout(menuPrompt, 100);
+    .then(console.log(`Added ${newDepartment} to the database`)); 
+    pool.end;
+    setTimeout(menuPrompt, 100);
 }) 
 }
 
