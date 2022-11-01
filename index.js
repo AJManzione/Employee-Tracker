@@ -193,34 +193,9 @@ inquirer
         pool.execute(`UPDATE employee_db.employee SET role_id = ${id} WHERE first_name = "${selectedFirstName}";`);
         console.log(`Successfully changed ${update} to ${selectedRole}`);
         pool.end;
-        setTimeout(menuPrompt, 1000);
+        setTimeout(menuPrompt, 100);
 
     }
-
-    /* function updateRole() {
-
-        let firstName = [];
-        let lastName = [];
-        let roleId = [];
-        let employeeSeed = [];
-        let newSeed;
-        pool.execute('SELECT * FROM employee_db.employee;', (err, res) => {
-                res.map(function({ first_name }) { firstName.push(first_name)})
-                res.map(function({ last_name }) { lastName.push(last_name)})
-                res.map(function({ role_id }) { roleId.push(role_id)})
-
-                for(i = 0; i < firstName.length; i++) {
-              quit      let seed = ` ("${firstName[i]}", "${lastName[i]}", ${roleId[i]})`
-                    employeeSeed.push(seed);
-                } 
-                newSeed = employeeSeed.toString() + ";";
-                
-            
-        })
- 
-
-
-    } */
     })
 })
 }
@@ -313,8 +288,8 @@ let departments = [];
 
 function addRole() {
 
-    pool.execute(`SELECT * FROM employee_db.department;`, (err, res) => {
-        res.map(function({ department }) {departments.push(department)});  
+    pool.query(`SELECT * FROM department;`, (err, res) => {
+        res.map(function({ name }) {departments.push(name)});  
         pool.end;
     })
 
@@ -355,7 +330,7 @@ inquirer
     let departmentId = [];
     let id;
 
-    pool.query(`SELECT id FROM employee_db.department WHERE department = '${departmentChoice}';`, (err, res) => {
+    pool.query(`SELECT id FROM department WHERE name = '${departmentChoice}';`, (err, res) => {
         res.map(function({ id }) {departmentId.push(id)});
         id = departmentId.toString()
         pool.end;
@@ -364,7 +339,7 @@ inquirer
     setTimeout(getRole, 100);
 
     function getRole() {
-    pool.promise().query(`INSERT INTO employee_db.role (title, salary, department_id) VALUES ("${newRole}", "${newSalary}", 00${id})`) 
+    pool.promise().query(`INSERT INTO role (title, salary, department_id) VALUES ("${newRole}", "${newSalary}", ${id})`) 
     .then( () => {
         console.log(`Added ${newRole} to the database`)
         pool.end;
@@ -389,12 +364,12 @@ inquirer
         else {return "Please enter a department name"}
 }}])
 .then((answer) => {
-    let newDepartment = answer.department;
 
-    pool.promise().query(`INSERT INTO employee_db.department (id, department) VALUES (000, "${newDepartment}")`) 
-    .then(console.log(`Added ${newDepartment} to the database`)); 
-    pool.end;
-    setTimeout(menuPrompt, 100);
+    pool.query(`INSERT INTO department (name) VALUES ("${answer.department}")`, (err, res) => {
+        if (err) throw err
+        console.log(`Added ${answer.department} to the database`);
+        setTimeout(menuPrompt, 100);
+    })
 }) 
 }
 
