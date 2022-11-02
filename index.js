@@ -13,6 +13,20 @@ const pool = createPool({
     database: "employee_db"
 })
 
+
+/* -------------------------------------------------------------------------- */
+/*                                    Quit                                    */
+/* -------------------------------------------------------------------------- */
+
+function quitMenu() {
+    process.exit()
+}
+
+
+
+
+
+
 /* -------------------------------------------------------------------------- */
 /*                                 Menu Prompt                                */
 /* -------------------------------------------------------------------------- */
@@ -24,32 +38,33 @@ inquirer
     type: 'list',
     message: "What would you like to do?",
     name: 'welcome',
-    choices: ['View All Employees', 'Add Employee', 'Update Employee Roles', 'View All Roles', 'Add Role', 'View All Departments', 'Add Department'],
+    choices: ['View All Employees', 'Add Employee', 'Update Employee Roles', 'View All Roles', 'Add Role', 'View All Departments', 'Add Department', 'Quit'],
     validate: (value) => { 
         if(value){return true} 
         else {return "Please make a selection"}
     }
 }])
 .then ((answer) => {
-    let userAnswer = answer.welcome;
     
-    if(!userAnswer) {
+    if(!answer.welcome) {
         console.log("You did not make a selection");
-    } else if (userAnswer == "View All Employees") {
+    } else if (answer.welcome == "View All Employees") {
         viewAllEmployees();
-    } else if (userAnswer == "Add Employee") {
+    } else if (answer.welcome == "Add Employee") {
         addEmployee();
-    } else if (userAnswer == "Update Employee Roles") {
+    } else if (answer.welcome == "Update Employee Roles") {
         updateEmployeeRole();
-    } else if (userAnswer == "View All Roles") {
+    } else if (answer.welcome == "View All Roles") {
         viewAllRoles();
-    } else if (userAnswer == "Add Role") {
+    } else if (answer.welcome == "Add Role") {
         addRole();
-    } else if (userAnswer == "View All Departments") {
+    } else if (answer.welcome == "View All Departments") {
         viewAllDepartments();
-    } else if (userAnswer == "Add Department") {
+    } else if (answer.welcome == "Add Department") {
         addDepartment();
-    }   
+    } else if (answer.welcome == "Quit") {
+        quitMenu();
+    }
 })
 }
 
@@ -59,7 +74,7 @@ inquirer
 /* -------------------------------------------------------------------------- */
 
 function viewAllEmployees() {
-    pool.query(`SELECT employee.first_name, employee.last_name, role.title, role.salary, department.name, CONCAT(e.first_name, ' ' ,e.last_name) AS Manager FROM employee INNER JOIN role on role.id = employee.role_id INNER JOIN department on department.id = role.department_id left join employee e on employee.manager_id = e.id;`,(err, res) => {
+    pool.query(`SELECT employee.first_name, employee.last_name, role.title, role.salary, department.name AS department, CONCAT(e.first_name, ' ' ,e.last_name) AS manager FROM employee INNER JOIN role on role.id = employee.role_id INNER JOIN department on department.id = role.department_id left join employee e on employee.manager_id = e.id;`,(err, res) => {
       if (err) throw err;
       console.log('\n')
       console.log('- SHOWING ALL EMPLOYEES -')
@@ -91,7 +106,7 @@ function viewAllDepartments() {
 
 
 function viewAllRoles() {
-    pool.query(`SELECT role.id, role.title, department.name, role.salary FROM employee_db.role INNER JOIN department ON department_id = department.id;`, (err, res) => {
+    pool.query(`SELECT role.id, role.title, department.name AS department, role.salary FROM employee_db.role INNER JOIN department ON department_id = department.id;`, (err, res) => {
         if (err) throw err;
         console.log('\n')
         console.log('- SHOWING ALL ROLES -')
@@ -107,14 +122,12 @@ function viewAllRoles() {
 /* -------------------------------------------------------------------------- */
 
 function updateEmployeeRole() {
-    let firstNames = [];
-    let lastNames = [];
     let employeeNames = [];
     let allRoles = [];
 
-    pool.query(`SELECT first_name FROM employee_db.employee;`, (err, res) => {
+    pool.query(`SELECT CONCAT_WS(" ", first_name, last_name) AS whole_name FROM employee_db.employee;`, (err, res) => {
         if (err) throw err;
-        res.map(function({ first_name }) {firstNames.push(first_name)}); 
+        res.map(function({ whole_name }) {employeeNames.push(whole_name)}); 
     });
 
     pool.query(`SELECT role.title FROM employee_db.role;`, (err, res) => {
@@ -122,20 +135,6 @@ function updateEmployeeRole() {
         res.map(function({ title }) {allRoles.push(title)});
     });
 
-    setTimeout(getLastNames, 100);
-
-    function getLastNames() {
-    pool.query(`SELECT last_name FROM employee_db.employee;`, (err, res) => {
-        if (err) throw err;
-        res.map(function({ last_name }) {lastNames.push(last_name)}); 
-        for(i = 0; i < firstNames.length; i++) {
-            let first = firstNames[i].toString();
-            let last = lastNames[i].toString();
-            names = first + " " + last;
-            employeeNames.push(names);
-        }
-    })
-    }
 
 setTimeout(inquireUpdateER, 100);
 
@@ -174,11 +173,11 @@ inquirer
 .then((answer) => {
     let newRoleID = [];
     let id;
-    let selectedFirstName;
 
-    let newName = answer.updateEmployee.split(" ")
-    selectedFirstName = newName[0];
-
+    let name = selectedEmployee.toString()
+    let firstName = name.split(" ")[0]
+    let lastName = name.split(" ")[1]
+    
 
     pool.execute(`SELECT role.id FROM employee_db.role WHERE title = "${answer.newRole}";`, (err, res) => {
         res.map(function({ id }) {newRoleID.push(id)});
@@ -189,11 +188,11 @@ inquirer
         
  
     function changeRole() {   
-        pool.query(`UPDATE employee_db.employee SET role_id = ${id} WHERE first_name = "${selectedFirstName}";`, (err, res) => {
+        pool.query(`UPDATE employee_db.employee SET role_id = ${id} WHERE first_name = "${firstName}" AND last_name = "${lastName}";`, (err, res) => {
             if (err) throw err;
-            console.log('/n');
-            console.log(`Successfully changed ${answer.updateEmployee} to ${answer.newRole}`);
-            console.log('/n');
+            console.log('\n');
+            console.log(`Successfully changed ${firstName} ${lastName} to ${answer.newRole}`);
+            console.log('\n');
             menuPrompt();
         });
         }
@@ -213,7 +212,7 @@ function addEmployee() {
         res.map(function({ title }) {employeeRoles.push(title)}); 
     })
 
-var managersArr = [];
+var managersArr = ["No Manager"];
 
 function selectManager() {
   pool.query("SELECT first_name, last_name FROM employee WHERE manager_id IS NULL", function(err, res) {
@@ -267,18 +266,20 @@ inquirer
     }
 }])
 .then((answer) => {
-    let managerId = selectManager().indexOf(answer.manager) + 1
+    let managerId;
     let roleId = [];
     let id;
 
+    if (answer.manager == "No Manager") {
+        managerId = "null"
+    } else {  
+        managerId = selectManager().indexOf(answer.manager) + 1 }
 
     pool.query(`SELECT id FROM employee_db.role WHERE title = '${answer.employeeRole}';`, (err, res) => {
         res.map(function({ id }) {roleId.push(id)});
         id = roleId.toString()
-        
+        getEmployee();
     })
-
-    setTimeout(getEmployee, 100);
 
     function getEmployee() {
     pool.query(`INSERT INTO employee_db.employee (first_name, last_name, role_id, manager_id) VALUES ("${answer.firstName}", "${answer.lastName}", ${id}, ${managerId})`, (err, res) => {
@@ -286,7 +287,8 @@ inquirer
         console.log('\n');
         console.log(`Added ${answer.firstName} ${answer.lastName} to the database`);
         console.log('\n');
-    });  menuPrompt();
+        menuPrompt();
+    })
     }   
 })
 }
@@ -350,7 +352,9 @@ inquirer
     function getRole() {
         pool.query(`INSERT INTO role (title, salary, department_id) VALUES ("${answer.role}", "${answer.salary}", ${id})`, (err, res) => {
             if (err) throw err;
-            console.log(`Added ${answer.role} to the database`)
+            console.log('\n');
+            console.log(`Added ${answer.role} to the database`);
+            console.log('\n');
         }); setTimeout(menuPrompt, 100);
     }
 })
@@ -375,7 +379,9 @@ inquirer
 
     pool.query(`INSERT INTO department (name) VALUES ("${answer.department}")`, (err, res) => {
         if (err) throw err
+        console.log('\n');
         console.log(`Added ${answer.department} to the database`);
+        console.log('\n');
         setTimeout(menuPrompt, 100);
     })
 }) 
