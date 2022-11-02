@@ -133,7 +133,6 @@ function updateEmployeeRole() {
             let last = lastNames[i].toString();
             names = first + " " + last;
             employeeNames.push(names);
-            pool.end;
         }
     })
     }
@@ -151,7 +150,7 @@ inquirer
     choices: employeeNames,
     validate: (value) => { 
         if(value){return true} 
-        else {return "Please make a selection"}
+        else {return "Please choose an employee"}
     }
 }])
 .then((answer) => {
@@ -168,7 +167,7 @@ inquirer
     choices: allRoles,
     validate: (value) => { 
         if(value){return true} 
-        else {return "Please make a selection"}
+        else {return "Please choose a role"}
     }
 
 }])
@@ -192,13 +191,11 @@ inquirer
     function changeRole() {   
         pool.query(`UPDATE employee_db.employee SET role_id = ${id} WHERE first_name = "${selectedFirstName}";`, (err, res) => {
             if (err) throw err;
+            console.log('/n');
             console.log(`Successfully changed ${answer.updateEmployee} to ${answer.newRole}`);
+            console.log('/n');
             menuPrompt();
         });
-        
-
-        
-
         }
     })
 }}
@@ -270,7 +267,7 @@ inquirer
     }
 }])
 .then((answer) => {
-    let manager = answer.manager; //NEXT BIT OF WORK
+    let managerId = selectManager().indexOf(answer.manager) + 1
     let roleId = [];
     let id;
 
@@ -278,16 +275,19 @@ inquirer
     pool.query(`SELECT id FROM employee_db.role WHERE title = '${answer.employeeRole}';`, (err, res) => {
         res.map(function({ id }) {roleId.push(id)});
         id = roleId.toString()
+        
     })
 
     setTimeout(getEmployee, 100);
 
     function getEmployee() {
-    pool.query(`INSERT INTO employee_db.employee (first_name, last_name, role_id) VALUES ("${answer.firstName}", "${answer.lastName}", 00${id})`, (err, res) => {
+    pool.query(`INSERT INTO employee_db.employee (first_name, last_name, role_id, manager_id) VALUES ("${answer.firstName}", "${answer.lastName}", ${id}, ${managerId})`, (err, res) => {
         if (err) throw err;
-        console.log(`Added ${answer.firstName} ${answer.lastName} to the database`)
-    }); menuPrompt()
-    }
+        console.log('\n');
+        console.log(`Added ${answer.firstName} ${answer.lastName} to the database`);
+        console.log('\n');
+    });  menuPrompt();
+    }   
 })
 }
 
