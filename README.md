@@ -2,7 +2,7 @@
 
 ## A CLI to add employees, roles, departments, assign employees to roles within departments, assign managers to employees and edit employee roles all in one menu!
 
-[Video Walkthrough](https://www.youtube.com/watch?v=P6LUVCYvg_4&t=20s)
+[Video Walkthrough](https://www.youtube.com/watch?v=LZVVj4gDdaE)
 
 
 ## Table of Contents
