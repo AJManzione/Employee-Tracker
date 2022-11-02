@@ -273,7 +273,7 @@ inquirer
     if (answer.manager == "No Manager") {
         managerId = "null"
     } else {  
-        managerId = selectManager().indexOf(answer.manager) + 1 }
+        managerId = selectManager().indexOf(answer.manager)}
 
     pool.query(`SELECT id FROM employee_db.role WHERE title = '${answer.employeeRole}';`, (err, res) => {
         res.map(function({ id }) {roleId.push(id)});
