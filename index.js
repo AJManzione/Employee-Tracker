@@ -18,21 +18,18 @@ const pool = createPool({
 /* -------------------------------------------------------------------------- */
 
 function menuPrompt() {
-    inquirer
-.prompt (
-    [
-        {
-            type: 'list',
-            message: "What would you like to do?",
-            name: 'welcome',
-            choices: ['View All Employees', 'Add Employee', 'Update Employee Roles', 'View All Roles', 'Add Role', 'View All Departments', 'Add Department'],
-            validate: (value) => { 
-                if(value){return true} 
-                else {return "Please make a selection"}
-            }
-        }
-    ]
-)
+
+inquirer
+.prompt ([{
+    type: 'list',
+    message: "What would you like to do?",
+    name: 'welcome',
+    choices: ['View All Employees', 'Add Employee', 'Update Employee Roles', 'View All Roles', 'Add Role', 'View All Departments', 'Add Department'],
+    validate: (value) => { 
+        if(value){return true} 
+        else {return "Please make a selection"}
+    }
+}])
 .then ((answer) => {
     let userAnswer = answer.welcome;
     
@@ -62,14 +59,15 @@ function menuPrompt() {
 /* -------------------------------------------------------------------------- */
 
 function viewAllEmployees() {
-    pool.query("SELECT employee.first_name, employee.last_name, role.title, role.salary, department.name, CONCAT(e.first_name, ' ' ,e.last_name) AS Manager FROM employee INNER JOIN role on role.id = employee.role_id INNER JOIN department on department.id = role.department_id left join employee e on employee.manager_id = e.id;",(err, res) => {
-      if (err) throw err
-      console.table(res)
-    }); setTimeout(menuPrompt, 100);
-    
-    
+    pool.query(`SELECT employee.first_name, employee.last_name, role.title, role.salary, department.name, CONCAT(e.first_name, ' ' ,e.last_name) AS Manager FROM employee INNER JOIN role on role.id = employee.role_id INNER JOIN department on department.id = role.department_id left join employee e on employee.manager_id = e.id;`,(err, res) => {
+      if (err) throw err;
+      console.log('\n')
+      console.log('- SHOWING ALL EMPLOYEES -')
+      console.log('\n')
+      console.table(res);
+      console.log('\n')
+    }); setTimeout(menuPrompt, 100); 
 }
-
 
 /* -------------------------------------------------------------------------- */
 /*                            View All Departments                            */
@@ -78,11 +76,14 @@ function viewAllEmployees() {
 function viewAllDepartments() {
 
     pool.query(`SELECT * FROM department;`, (err, res) => {
-        if (err) throw err
+        if (err) throw err;
+        console.log('\n')
+        console.log('- SHOWING ALL DEPARTMENTS -')
+        console.log('\n')
         console.table(res);
-    }); setTimeout(menuPrompt, 100);
-
-
+        console.log('\n')
+        menuPrompt();
+    });
 }
 /* -------------------------------------------------------------------------- */
 /*                               View All Roles                               */
@@ -91,17 +92,19 @@ function viewAllDepartments() {
 
 function viewAllRoles() {
     pool.query(`SELECT role.id, role.title, department.name, role.salary FROM employee_db.role INNER JOIN department ON department_id = department.id;`, (err, res) => {
+        if (err) throw err;
+        console.log('\n')
+        console.log('- SHOWING ALL ROLES -')
+        console.log('\n')
         console.table(res);
-        pool.end;
-    }); setTimeout(menuPrompt, 100);
+        console.log('\n')
+        menuPrompt();
+    }); 
 }
-
-
 
 /* -------------------------------------------------------------------------- */
 /*                            Update Employee Role                            */
 /* -------------------------------------------------------------------------- */
-
 
 function updateEmployeeRole() {
     let firstNames = [];
@@ -109,19 +112,21 @@ function updateEmployeeRole() {
     let employeeNames = [];
     let allRoles = [];
 
-    pool.execute(`SELECT first_name FROM employee_db.employee;`, (err, res) => {
+    pool.query(`SELECT first_name FROM employee_db.employee;`, (err, res) => {
+        if (err) throw err;
         res.map(function({ first_name }) {firstNames.push(first_name)}); 
-        pool.end;
-    })
+    });
 
     pool.query(`SELECT role.title FROM employee_db.role;`, (err, res) => {
+        if (err) throw err;
         res.map(function({ title }) {allRoles.push(title)});
-        pool.end;
     });
 
     setTimeout(getLastNames, 100);
+
     function getLastNames() {
-    pool.execute(`SELECT last_name FROM employee_db.employee;`, (err, res) => {
+    pool.query(`SELECT last_name FROM employee_db.employee;`, (err, res) => {
+        if (err) throw err;
         res.map(function({ last_name }) {lastNames.push(last_name)}); 
         for(i = 0; i < firstNames.length; i++) {
             let first = firstNames[i].toString();
@@ -133,8 +138,7 @@ function updateEmployeeRole() {
     })
     }
 
-
-setTimeout(inquireUpdateER, 120);
+setTimeout(inquireUpdateER, 100);
 
 let selectedEmployee = [];
 
@@ -149,15 +153,11 @@ inquirer
         if(value){return true} 
         else {return "Please make a selection"}
     }
-},
-])
+}])
 .then((answer) => {
-    update = answer.updateEmployee;
-    selectedEmployee.push(update);
+    selectedEmployee.push(answer.updateEmployee);
     setTimeout(updateSelectedRole, 100);
 })}
-
-
 
 function updateSelectedRole() {
 inquirer
@@ -173,53 +173,60 @@ inquirer
 
 }])
 .then((answer) => {
-    let selectedRole = answer.newRole;
     let newRoleID = [];
     let id;
     let selectedFirstName;
 
-    let newName = update.split(" ")
+    let newName = answer.updateEmployee.split(" ")
     selectedFirstName = newName[0];
 
 
-    pool.execute(`SELECT role.id FROM employee_db.role WHERE title = "${selectedRole}";`, (err, res) => {
+    pool.execute(`SELECT role.id FROM employee_db.role WHERE title = "${answer.newRole}";`, (err, res) => {
         res.map(function({ id }) {newRoleID.push(id)});
         id = newRoleID.toString()
-        pool.end;
+        });
+
         setTimeout(changeRole, 100);
         
  
     function changeRole() {   
-        pool.execute(`UPDATE employee_db.employee SET role_id = ${id} WHERE first_name = "${selectedFirstName}";`);
-        console.log(`Successfully changed ${update} to ${selectedRole}`);
-        pool.end;
-        setTimeout(menuPrompt, 100);
+        pool.query(`UPDATE employee_db.employee SET role_id = ${id} WHERE first_name = "${selectedFirstName}";`, (err, res) => {
+            if (err) throw err;
+            console.log(`Successfully changed ${answer.updateEmployee} to ${answer.newRole}`);
+            menuPrompt();
+        });
+        
 
-    }
+        
+
+        }
     })
-})
-}
-
-}
-
-
-
-
-
+}}
 
 /* -------------------------------------------------------------------------- */
 /*                                Add Employee                                */
 /* -------------------------------------------------------------------------- */
-
 
 employeeRoles = []
 
 function addEmployee() {
     
     pool.execute(`SELECT * FROM employee_db.role;`, (err, res) => {
+        if (err) throw err;
         res.map(function({ title }) {employeeRoles.push(title)}); 
-        pool.end;
     })
+
+var managersArr = [];
+
+function selectManager() {
+  pool.query("SELECT first_name, last_name FROM employee WHERE manager_id IS NULL", function(err, res) {
+    if (err) throw err;
+    for (var i = 0; i < res.length; i++) {
+      managersArr.push(res[i].first_name);
+    }
+  }); return managersArr;
+
+}
 
 inquirer
 .prompt([{
@@ -251,33 +258,37 @@ inquirer
         if(value){return true} 
         else {return "Please make a selection"}
     }
-
+},
+{
+    type: 'list',
+    message: "Who is the employees manager?",
+    name: 'manager',
+    choices: selectManager(),
+    validate: (value) => { 
+        if(value){return true} 
+        else {return "Please make a selection"}
+    }
 }])
 .then((answer) => {
-    let firstName = answer.firstName;
-    let lastName = answer.lastName;
-    let employeeRole = answer.employeeRole;
-    let roleId = []
+    let manager = answer.manager; //NEXT BIT OF WORK
+    let roleId = [];
     let id;
 
 
-    pool.query(`SELECT id FROM employee_db.role WHERE title = '${employeeRole}';`, (err, res) => {
+    pool.query(`SELECT id FROM employee_db.role WHERE title = '${answer.employeeRole}';`, (err, res) => {
         res.map(function({ id }) {roleId.push(id)});
         id = roleId.toString()
-        pool.end;
     })
 
     setTimeout(getEmployee, 100);
 
     function getEmployee() {
-    pool.promise().query(`INSERT INTO employee_db.employee (first_name, last_name, role_id) VALUES ("${firstName}", "${lastName}", 00${id})`) 
-    .then( () => {
-        console.log(`Added ${firstName} ${lastName} to the database`)
-        pool.end;
-    }); setTimeout(menuPrompt, 100);
+    pool.query(`INSERT INTO employee_db.employee (first_name, last_name, role_id) VALUES ("${answer.firstName}", "${answer.lastName}", 00${id})`, (err, res) => {
+        if (err) throw err;
+        console.log(`Added ${answer.firstName} ${answer.lastName} to the database`)
+    }); menuPrompt()
     }
 })
-
 }
 
 /* -------------------------------------------------------------------------- */
@@ -289,8 +300,8 @@ let departments = [];
 function addRole() {
 
     pool.query(`SELECT * FROM department;`, (err, res) => {
+        if (err) throw err
         res.map(function({ name }) {departments.push(name)});  
-        pool.end;
     })
 
 inquirer
@@ -323,27 +334,24 @@ inquirer
     }
     
 }])
+
 .then((answer) => {
-    let newRole = answer.role;
-    let newSalary = answer.salary;
-    let departmentChoice = answer.whichDepartment;
     let departmentId = [];
     let id;
 
-    pool.query(`SELECT id FROM department WHERE name = '${departmentChoice}';`, (err, res) => {
+    pool.query(`SELECT id FROM department WHERE name = '${answer.whichDepartment}';`, (err, res) => {
+        if (err) throw err;
         res.map(function({ id }) {departmentId.push(id)});
         id = departmentId.toString()
-        pool.end;
     })
     
     setTimeout(getRole, 100);
 
     function getRole() {
-    pool.promise().query(`INSERT INTO role (title, salary, department_id) VALUES ("${newRole}", "${newSalary}", ${id})`) 
-    .then( () => {
-        console.log(`Added ${newRole} to the database`)
-        pool.end;
-    }); setTimeout(menuPrompt, 100);
+        pool.query(`INSERT INTO role (title, salary, department_id) VALUES ("${answer.role}", "${answer.salary}", ${id})`, (err, res) => {
+            if (err) throw err;
+            console.log(`Added ${answer.role} to the database`)
+        }); setTimeout(menuPrompt, 100);
     }
 })
 }
@@ -351,7 +359,6 @@ inquirer
 /* -------------------------------------------------------------------------- */
 /*                               Add Department                               */
 /* -------------------------------------------------------------------------- */
-
 
 function addDepartment() {
 inquirer
@@ -362,7 +369,8 @@ inquirer
     validate: (value) => { 
         if(value){return true} 
         else {return "Please enter a department name"}
-}}])
+        }
+}])
 .then((answer) => {
 
     pool.query(`INSERT INTO department (name) VALUES ("${answer.department}")`, (err, res) => {
